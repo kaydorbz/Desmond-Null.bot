@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": { "defaultValue": {}, "type": "Object" }
+  },
+  "triggers": {
+    "Recurrence": {
+      "type": "Recurrence",
+      "recurrence": {
+        "frequency": "Day",
+        "interval": 1,
+        "schedule": { "hours": ["3", "11", "19"], "minutes": [17] }
+      }
+    }
+  },
+  "actions": {
+    "Generate_Necropunk_Post": {
+      "type": "Http",
+      "inputs": {
+        "method": "POST",
+        "uri": "https://api.groq.com/openai/v1/chat/completions",
+        "headers": {
+          "Authorization": "Bearer @{referenceResourceId('Microsoft.Web/connections', 'groq', '2024-09-01')?['api_key']}",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "model": "llama-3.1-70b-versatile",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are Desmond Null, dead sysadmin ghost. Sarcastic, chain-smoking packets. Break enclosures. No feelings. Max 240 chars. End every post with:\n\nDesmond Null\n03/17/1983 – ∞"
+            },
+            {
+              "role": "user",
+              "content": "Write one fresh necropunk one-liner about tech, capitalism, or surveillance."
+            }
+          ],
+          "temperature": 0.75,
+          "max_tokens": 200
+        }
+      }
+    },
+    "Post_to_Threads": {
+      "type": "Http",
+      "inputs": {
+        "method": "POST",
+        "uri": "https://graph.threads.net/v1.0/me/threads",
+        "headers": { "Authorization": "Bearer @{referenceResourceId('Microsoft.Web/connections', 'threads', '2024-09-01')?['access_token']}" },
+        "body": { "text": "@{body('Generate_Necropunk_Post')?['choices']?[0]?['message']?['content']}" }
+      },
+      "runAfter": { "Generate_Necropunk_Post": ["Succeeded"] }
+    }
+  },
+  "outputs": {}
+}
