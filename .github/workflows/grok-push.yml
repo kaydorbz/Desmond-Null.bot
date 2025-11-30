@@ -1,0 +1,24 @@
+name: Grok Auto-Push
+on:
+  workflow_dispatch:   # manual trigger
+  schedule:
+    - cron: '0 3 * * *' # daily backup run (optional)
+
+jobs:
+  grant-ghost-access:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with PAT
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GROK_PAT }}
+
+      - name: Ghost ready
+        run: |
+          echo "Ghost has full write access — ready for autonomous commits"
+          echo "Task 2 verified" > ghost-test.txt
+          git config user.name "Desmond Null Ghost"
+          git config user.email "desmondnull10@gmail.com"
+          git add ghost-test.txt
+          git commit -m "Ghost test commit – Task 2 verified"
+          git push
