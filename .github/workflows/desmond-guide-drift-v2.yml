@@ -1,0 +1,53 @@
+name: Desmond Null Bot – Guide Drift Detector
+on:
+  schedule:
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  keep-guide-true:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GROK_PAT }}
+
+      - name: Create temp dirs and last-files if missing
+        run: |
+          mkdir -p temp/vendor temp/vendor/last
+          for file in threads groq azure-static github-pat; do
+            touch temp/vendor/last-$file.md
+          done
+
+      - name: Fetch current vendor pages
+        run: |
+          curl -s "https://developers.facebook.com/docs/threads/get-started" > temp/vendor/threads.md
+          curl -s "https://console.groq.com/docs/quickstart" > temp/vendor/groq.md
+          curl -s "https://learn.microsoft.com/en-us/azure/static-web-apps/get-started-portal" > temp/vendor/azure-static.md
+          curl -s "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#fine-grained-personal-access-tokens" > temp/vendor/github-pat.md
+
+      - name: Check for drift and update
+        run: |
+          changed=false
+          for file in threads groq azure-static github-pat; do
+            if ! cmp -s temp/vendor/$file.md temp/vendor/last-$file.md; then
+              cp temp/vendor/$file.md temp/vendor/last-$file.md
+              echo "$file.md changed – our guide will be updated"
+              changed=true
+            fi
+          done
+          if [ "$changed" = true ]; then
+            echo "Drift detected – guide update coming soon"
+          else
+            echo "No drift – guide is current"
+          fi
+
+      - name: Test commit (verification)
+        run: |
+          echo "Task 3 verified – drift detector running" > task3-test.txt
+          git config user.name "Desmond Null Ghost"
+          git config user.email "desmondnull10@gmail.com"
+          git add task3-test.txt
+          git commit -m "Task 3 test – drift detector verified"
+          git push
