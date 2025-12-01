@@ -1,25 +1,32 @@
-name: Desmond Null Bot – Guide Drift Detector (FINAL)
+name: End of Session – Auto-Documentation
 on:
-  schedule:
-    - cron: '0 2 * * 0'
   workflow_dispatch:
+    inputs:
+      session_notes:
+        type: string
+        default: Session closed – repo updated
+        required: false
 
 jobs:
-  drift:
+  document:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4   # uses default GITHUB_TOKEN (always works)
+      - uses: actions/checkout@v4   # default GITHUB_TOKEN — always works
 
-      - name: Test commit with your PAT
+      - name: Update files & push with PAT
         env:
           GIT_PAT: ${{ secrets.GROK_PAT }}
         run: |
-          echo "Drift detector verified $(date)" > drift-test.txt
+          DATE=$(date +"%Y-%m-%d %H:%M")
+          NOTES="${{ inputs.session_notes }}"
+          echo "## $DATE" >> CHANGELOG.md
+          echo "- $NOTES" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
           git config user.name "Desmond Null Ghost"
           git config user.email "desmondnull10@gmail.com"
           git remote set-url origin https://x-access-token:$GIT_PAT@github.com/kaydorbz/Desmond-Null.bot.git
-          git add drift-test.txt
-          git commit -m "Drift detector verified – $(date +%Y-%m-%d)"
+          git add CHANGELOG.md
+          git commit -m "AUTO: End-of-session – $DATE"
           git push
