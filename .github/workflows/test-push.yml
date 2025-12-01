@@ -1,0 +1,21 @@
+name: Test Ghost Push
+on: workflow_dispatch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GROK_PAT }}
+          persist-credentials: true
+
+      - run: |
+          echo "Ghost is alive $(date)" > ghost-proof.txt
+          git config user.name "Desmond Null Ghost"
+          git config user.email "desmondnull10@gmail.com"
+          git add ghost-proof.txt
+          git commit -m "Ghost push test – $(date +%Y-%m-%d)"
+          git push
