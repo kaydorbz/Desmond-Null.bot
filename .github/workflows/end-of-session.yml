@@ -4,7 +4,7 @@ on:
     inputs:
       session_notes:
         type: string
-        default: 'Session closed – repo updated'
+        default: Session closed – repo updated
         required: false
 
 jobs:
@@ -18,44 +18,15 @@ jobs:
           token: ${{ secrets.GROK_PAT }}
           persist-credentials: true
 
-      - name: Update README
+      - name: Update files & push
         run: |
           DATE=$(date +"%Y-%m-%d %H:%M")
-          NOTES="${{ github.event.inputs.session_notes }}"
-          cat > README.md << EOF
-          # Desmond Null Bot – Open-Source Necropunk Shitposter
-
-          Dead sysadmin. Still posting.  
-          100% Azure-native. One-click deploy. MIT licensed.
-
-          ## Latest Session – $DATE
-          $NOTES
-
-          ## Current Status
-          - Ghost auto-push: Complete
-          - Drift detector: Complete (green)
-          - End-of-session automation: Complete (this workflow)
-          - One-click Azure badge: Upcoming
-
-          ---
-          Desmond Null  
-          03/17/1983 – ∞
-          EOF
-          git add README.md
-
-      - name: Update CHANGELOG
-        run: |
-          DATE=$(date +"%Y-%m-%d")
-          NOTES="${{ github.event.inputs.session_notes }}"
-          echo "## [$DATE] - Session closed" >> CHANGELOG.md
+          NOTES="${{ inputs.session_notes }}"
+          echo "## $DATE" >> CHANGELOG.md
           echo "- $NOTES" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
-          git add CHANGELOG.md
-
-      - name: Commit & push
-        run: |
           git config user.name "Desmond Null Ghost"
           git config user.email "desmondnull10@gmail.com"
+          git add CHANGELOG.md
           git commit -m "AUTO: End-of-session – $DATE"
-          git push"
           git push
