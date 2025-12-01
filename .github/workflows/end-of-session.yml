@@ -1,4 +1,4 @@
-name: End of Session – Auto-Documentation
+ name: End of Session – Auto-Documentation
 on:
   workflow_dispatch:
     inputs:
@@ -13,12 +13,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GROK_PAT }}
-          persist-credentials: true
+      - uses: actions/checkout@v4   # default GITHUB_TOKEN — always works
 
-      - name: Update files & push
+      - name: Update files & push with PAT
+        env:
+          GIT_PAT: ${{ secrets.GROK_PAT }}
         run: |
           DATE=$(date +"%Y-%m-%d %H:%M")
           NOTES="${{ inputs.session_notes }}"
@@ -27,6 +26,7 @@ jobs:
           echo "" >> CHANGELOG.md
           git config user.name "Desmond Null Ghost"
           git config user.email "desmondnull10@gmail.com"
+          git remote set-url origin https://x-access-token:$GIT_PAT@github.com/kaydorbz/Desmond-Null.bot.git
           git add CHANGELOG.md
           git commit -m "AUTO: End-of-session – $DATE"
           git push
