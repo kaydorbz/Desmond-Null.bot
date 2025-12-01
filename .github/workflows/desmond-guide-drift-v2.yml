@@ -1,14 +1,12 @@
 name: Desmond Null Bot – Guide Drift Detector + Auto-Rewrite
 on:
   schedule:
-    - cron: '0 2 * * 0'   # Every Sunday 02:00 UTC
+    - cron: '0 2 * * 0'
   workflow_dispatch:
 
 jobs:
   drift-and-rewrite:
     runs-on: ubuntu-latest
-    env:
-      GROK_KEY: ${{ secrets.GROK_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,19 +35,15 @@ jobs:
           done
           echo "changed=$changed" >> $GITHUB_OUTPUT
 
-      - name: Test commit (always runs)
+      - name: Test commit (always)
         run: |
           echo "Task 3 verified – drift detector working" > task3-test.txt
           git config --global user.name "Desmond Null Ghost"
           git config --global user.email "desmondnull10@gmail.com"
           git add task3-test.txt
           git commit -m "Task 3 test – drift detector verified $(date +%Y-%m-%d)"
-          git push || echo "Nothing to commit"
-
-      - name: Rewrite guide placeholder
-        if: steps.drift.outputs.changed == 'true'
-        run: |
-          echo "Drift detected — guide update ready for Groq rewrite"
-          git add task3-test.txt
-          git commit -m "Task 3 test – drift detector verified"
           git push
+
+      - name: Drift detected message
+        if: steps.drift.outputs.changed == 'true'
+        run: echo "Drift detected — guide will be rewritten when Groq step is added"
