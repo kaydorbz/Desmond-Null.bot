@@ -6,7 +6,6 @@ on:
         type: string
         default: 'Session closed – repo updated'
         required: false
-        description: 'Quick notes for today (optional)'
 
 jobs:
   document:
@@ -33,12 +32,10 @@ jobs:
           $NOTES
 
           ## Current Status
-          - Ghost auto-push: Complete  
-          - Drift detector: Complete (green)  
-          - End-of-session automation: Complete (this workflow)  
-          - One-click Azure badge: Upcoming (Task 4)
-
-          ![Deploy to Azure](https://aka.ms/deploytoazurebutton) ← coming soon
+          - Ghost auto-push: Complete
+          - Drift detector: Complete (green)
+          - End-of-session automation: Complete (this workflow)
+          - One-click Azure badge: Upcoming
 
           ---
           Desmond Null  
@@ -59,5 +56,6 @@ jobs:
         run: |
           git config user.name "Desmond Null Ghost"
           git config user.email "desmondnull10@gmail.com"
-          git commit -m "AUTO: End-of-session documentation – $DATE"
+          git commit -m "AUTO: End-of-session – $DATE"
+          git push"
           git push
