@@ -1,4 +1,4 @@
-ame: Desmond Null Bot – Guide Drift Detector (FINAL)
+Name: Desmond Null Bot – Guide Drift Detector (FINAL)
 on:
   schedule:
     - cron: '0 2 * * 0'
