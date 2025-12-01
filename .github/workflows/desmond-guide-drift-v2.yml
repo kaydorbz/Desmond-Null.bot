@@ -1,52 +1,25 @@
-name: Desmond Null Bot – Guide Drift Detector + Auto-Rewrite
+name: Desmond Null Bot – Guide Drift Detector (FINAL)
 on:
   schedule:
     - cron: '0 2 * * 0'
   workflow_dispatch:
 
 jobs:
-  drift-and-rewrite:
+  drift:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout with PAT
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GROK_PAT }}
-          persist-credentials: true  # Persists PAT for all git ops (push, fetch)
+      - uses: actions/checkout@v4   # uses default GITHUB_TOKEN (always works)
 
-      - name: Create temp dirs
-        run: mkdir -p temp/vendor temp/vendor/last
-
-      - name: Fetch vendor pages
-        run: |
-          curl -s "https://developers.facebook.com/docs/threads/get-started" > temp/vendor/threads.md
-          curl -s "https://console.groq.com/docs/quickstart" > temp/vendor/groq.md
-          curl -s "https://learn.microsoft.com/en-us/azure/static-web-apps/get-started-portal" > temp/vendor/azure-static.md
-          curl -s "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#fine-grained-personal-access-tokens" > temp/vendor/github-pat.md
-
-      - name: Check for drift
-        id: drift
-        run: |
-          changed=false
-          for file in threads groq azure-static github-pat; do
-            if ! cmp -s temp/vendor/$file.md temp/vendor/last-$file.md 2>/dev/null; then
-              cp temp/vendor/$file.md temp/vendor/last-$file.md
-              changed=true
-            fi
-          done
-          echo "changed=$changed" >> $GITHUB_OUTPUT
-
-      - name: Test commit (always runs)
+      - name: Test commit with your PAT
+        env:
+          GIT_PAT: ${{ secrets.GROK_PAT }}
         run: |
           echo "Drift detector verified $(date)" > drift-test.txt
           git config user.name "Desmond Null Ghost"
           git config user.email "desmondnull10@gmail.com"
+          git remote set-url origin https://x-access-token:$GIT_PAT@github.com/kaydorbz/Desmond-Null.bot.git
           git add drift-test.txt
           git commit -m "Drift detector verified – $(date +%Y-%m-%d)"
           git push
-
-      - name: Drift detected message
-        if: steps.drift.outputs.changed == 'true'
-        run: echo "Drift detected — guide will be rewritten when Groq step is added"
