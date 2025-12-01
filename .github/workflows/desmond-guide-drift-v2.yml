@@ -10,33 +10,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout with SSH
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ssh-key: ${{ secrets.GROK_SSH_KEY }}
-          fetch-depth: 0
-
-      - name: Create temp dirs
-        run: mkdir -p temp/vendor temp/vendor/last
-
-      - name: Fetch vendor pages
-        run: |
-          curl -s "https://developers.facebook.com/docs/threads/get-started" > temp/vendor/threads.md
-          curl -s "https://console.groq.com/docs/quickstart" > temp/vendor/groq.md
-          curl -s "https://learn.microsoft.com/en-us/azure/static-web-apps/get-started-portal" > temp/vendor/azure-static.md
-          curl -s "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#fine-grained-personal-access-tokens" > temp/vendor/github-pat.md
-
-      - name: Check for drift
-        id: drift
-        run: |
-          changed=false
-          for file in threads groq azure-static github-pat; do
-            if ! cmp -s temp/vendor/$file.md temp/vendor/last-$file.md 2>/dev/null; then
-              cp temp/vendor/$file.md temp/vendor/last-$file.md
-              changed=true
-            fi
-          done
-          echo "changed=$changed" >> $GITHUB_OUTPUT
+          token: ${{ secrets.GROK_PAT }}
+          persist-credentials: true   # ← this line fixes the HTTPS prompt error
 
       - name: Test commit (always)
         run: |
@@ -45,8 +23,6 @@ jobs:
           git config user.email "desmondnull10@gmail.com"
           git add drift-test.txt
           git commit -m "Drift detector verified – $(date +%Y-%m-%d)"
-          git push
-
-      - name: Drift detected message
+          git pushed message
         if: steps.drift.outputs.changed == 'true'
         run: echo "Drift detected — guide will be rewritten when Groq step is added"
