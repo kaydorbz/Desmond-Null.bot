@@ -3,8 +3,10 @@ on:
   workflow_dispatch:
     inputs:
       session_notes:
-        description: 'Quick notes for today (optional)'
+        type: string
+        default: 'Session closed – repo updated'
         required: false
+        description: 'Quick notes for today (optional)'
 
 jobs:
   document:
@@ -15,18 +17,20 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GROK_PAT }}
+          persist-credentials: true
 
       - name: Update README
         run: |
           DATE=$(date +"%Y-%m-%d %H:%M")
-          cat > README.md.new << 'EOF'
+          NOTES="${{ github.event.inputs.session_notes }}"
+          cat > README.md << EOF
           # Desmond Null Bot – Open-Source Necropunk Shitposter
 
           Dead sysadmin. Still posting.  
           100% Azure-native. One-click deploy. MIT licensed.
 
           ## Latest Session – $DATE
-          ${{ github.event.inputs.session_notes || "Session closed – repo updated" }}
+          $NOTES
 
           ## Current Status
           - Ghost auto-push: Complete  
@@ -40,19 +44,20 @@ jobs:
           Desmond Null  
           03/17/1983 – ∞
           EOF
-          mv README.md.new README.md
+          git add README.md
 
       - name: Update CHANGELOG
         run: |
           DATE=$(date +"%Y-%m-%d")
+          NOTES="${{ github.event.inputs.session_notes }}"
           echo "## [$DATE] - Session closed" >> CHANGELOG.md
-          echo "- ${{ github.event.inputs.session_notes || "Documentation automation activated" }}" >> CHANGELOG.md
+          echo "- $NOTES" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
+          git add CHANGELOG.md
 
       - name: Commit & push
         run: |
           git config user.name "Desmond Null Ghost"
           git config user.email "desmondnull10@gmail.com"
-          git add README.md CHANGELOG.md
           git commit -m "AUTO: End-of-session documentation – $DATE"
           git push
