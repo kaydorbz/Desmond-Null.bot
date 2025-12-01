@@ -7,24 +7,16 @@ on:
 jobs:
   drift-and-rewrite:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write           # ← this line is the missing piece
     steps:
       - name: Checkout with PAT
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GROK_PAT }}
-          persist-credentials: true   # ← this fixes the HTTPS fallback
+          persist-credentials: true
 
-      - name: Create temp dirs
-        run: mkdir -p temp/vendor temp/vendor/last
-
-      - name: Fetch vendor pages
-        run: |
-          curl -s "https://developers.facebook.com/docs/threads/get-started" > temp/vendor/threads.md
-          curl -s "https://console.groq.com/docs/quickstart" > temp/vendor/groq.md
-          curl -s "https://learn.microsoft.com/en-us/azure/static-web-apps/get-started-portal" > temp/vendor/azure-static.md
-          curl -s "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#fine-grained-personal-access-tokens" > temp/vendor/github-pat.md
-
-      - name: Test commit (always runs)
+      - name: Test commit (always)
         run: |
           echo "Drift detector verified $(date)" > drift-test.txt
           git config user.name "Desmond Null Ghost"
@@ -32,6 +24,3 @@ jobs:
           git add drift-test.txt
           git commit -m "Drift detector verified – $(date +%Y-%m-%d)"
           git push
-
-      - name: Drift detected message
-        run: echo "Drift detector ready — guide will be rewritten when Groq step is added"
