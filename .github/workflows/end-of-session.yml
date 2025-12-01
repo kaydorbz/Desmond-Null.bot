@@ -1,4 +1,4 @@
- name: End of Session – Auto-Documentation
+name: End of Session – Auto-Documentation
 on:
   workflow_dispatch:
     inputs:
