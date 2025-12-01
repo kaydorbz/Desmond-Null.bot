@@ -13,14 +13,17 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4   # default GITHUB_TOKEN — always works
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GROK_PAT }}
+          persist-credentials: true
 
       - name: Update files & push with PAT
         env:
           GIT_PAT: ${{ secrets.GROK_PAT }}
         run: |
           DATE=$(date +"%Y-%m-%d %H:%M")
-          NOTES="${{ inputs.session_notes }}"
+          NOTES="${{ github.event.inputs.session_notes }}"
           echo "## $DATE" >> CHANGELOG.md
           echo "- $NOTES" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
@@ -30,3 +33,4 @@ jobs:
           git add CHANGELOG.md
           git commit -m "AUTO: End-of-session – $DATE"
           git push
+          
