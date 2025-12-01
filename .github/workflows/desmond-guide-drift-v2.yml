@@ -23,6 +23,4 @@ jobs:
           git config user.email "desmondnull10@gmail.com"
           git add drift-test.txt
           git commit -m "Drift detector verified – $(date +%Y-%m-%d)"
-          git pushed message
-        if: steps.drift.outputs.changed == 'true'
-        run: echo "Drift detected — guide will be rewritten when Groq step is added"
+          git push
